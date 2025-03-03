@@ -63,7 +63,11 @@ function createWindow() {
       contextIsolation: true,
     },
     title: '图片压缩工具',
+    autoHideMenuBar: true,
   })
+
+  // 隐藏菜单栏
+  win.setMenuBarVisibility(false)
 
   // 允许拖放文件
   win.webContents.on('will-navigate', (event) => {

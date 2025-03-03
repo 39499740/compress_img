@@ -410,7 +410,7 @@ declare global {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -612,6 +612,7 @@ declare global {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 15px;
   margin-top: 20px;
+  width: 100%;
 }
 
 .summary-item {
