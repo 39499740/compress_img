@@ -55,7 +55,7 @@ const totalSize = computed(() => {
 })
 
 const formattedSize = computed(() => {
-  return formatFileSize(totalSize.value)
+  return formatBytes(totalSize.value)
 })
 
 const selectedCount = computed(() => {
@@ -271,29 +271,13 @@ async function handleDrop(event: DragEvent) {
   }
 }
 
-// 格式化文件大小
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return '0 Bytes'
   
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(1024))
   
-  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`
-}
-
-// 声明全局接口
-declare global {
-  interface Window {
-    imageCompressor: {
-      selectFolder: () => Promise<{ canceled: boolean; folderPath?: string }>
-      scanImages: (folderPath: string) => Promise<{ success: boolean; images?: ImageFile[]; error?: string }>
-      compressImages: (params: { images: ImageFile[]; quality: number; outputDir: string }) => Promise<{ success: boolean; results?: CompressResult[]; error?: string }>
-      selectOutputDir: () => Promise<{ canceled: boolean; outputDir?: string }>
-      saveFailedList: (failedContent: string, outputDir: string) => Promise<{ success: boolean; path?: string; error?: string }>
-      onProgress: (callback: (progress: number) => void) => void
-      offProgress: () => void
-    }
-  }
+  return `${(bytes / Math.pow(1024, i)).toFixed(decimals)} ${units[i]}`
 }
 </script>
 
@@ -453,11 +437,11 @@ declare global {
             </div>
             <div class="summary-item">
               <div class="summary-label">原始大小</div>
-              <div class="summary-value">{{ formatFileSize(originalTotalSize) }}</div>
+              <div class="summary-value">{{ formatBytes(originalTotalSize) }}</div>
             </div>
             <div class="summary-item">
               <div class="summary-label">压缩后大小</div>
-              <div class="summary-value">{{ formatFileSize(compressedTotalSize) }}</div>
+              <div class="summary-value">{{ formatBytes(compressedTotalSize) }}</div>
             </div>
             <div class="summary-item">
               <div class="summary-label">节省空间</div>

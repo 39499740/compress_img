@@ -58,7 +58,7 @@ npm run build:win
 - Electron
 - Vue 3
 - TypeScript
-- Sharp (图片处理库)
+
 
 ## 许可证
 

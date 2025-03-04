@@ -1,7 +1,7 @@
 {
   "name": "compress_img",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "一个简单易用的图片压缩工具",
   "author": {
