@@ -32,7 +32,13 @@ contextBridge.exposeInMainWorld('imageCompressor', {
   scanImages: (folderPath: string) => ipcRenderer.invoke('scan-images', folderPath),
   
   // 压缩图片
-  compressImages: (params: any) => ipcRenderer.invoke('compress-images', params),
+  compressImages: (params: {
+    images: any[],
+    quality: number,
+    outputDir: string,
+    dateOption?: 'preserve' | 'current' | 'custom',
+    customDate?: string | null
+  }) => ipcRenderer.invoke('compress-images', params),
   
   // 选择输出目录
   selectOutputDir: () => ipcRenderer.invoke('select-output-dir'),

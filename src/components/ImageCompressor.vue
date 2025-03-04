@@ -38,6 +38,13 @@ const successCount = ref<number>(0)
 const originalTotalSize = ref<number>(0)
 const compressedTotalSize = ref<number>(0)
 
+// 日期相关选项
+const dateOption = ref<'preserve' | 'current' | 'custom'>('preserve')
+const customDate = ref<string>(new Date().toISOString().split('T')[0]) // 默认为今天
+const customTime = ref<string>(
+  new Date().toTimeString().split(' ')[0].substring(0, 8)
+) // 默认为当前时间 HH:MM:SS
+
 // 计算属性
 const selectedImages = computed(() => {
   return images.value.filter(img => img.selected)
@@ -160,10 +167,22 @@ async function startCompression() {
     
     totalCount.value = imagesToCompress.length
     
+    // 准备日期选项
+    let dateToUse: string | null = null;
+    if (dateOption.value === 'current') {
+      dateToUse = new Date().toISOString();
+    } else if (dateOption.value === 'custom' && customDate.value) {
+      // 将日期和时间字符串组合并转换为 ISO 格式
+      const dateTimeStr = `${customDate.value}T${customTime.value}`;
+      dateToUse = new Date(dateTimeStr).toISOString();
+    }
+    
     const result = await window.imageCompressor.compressImages({
       images: imagesToCompress,
       quality: quality.value,
-      outputDir: outputDir.value
+      outputDir: outputDir.value,
+      dateOption: dateOption.value,
+      customDate: dateToUse
     })
     
     if (result.success && result.results) {
@@ -343,6 +362,57 @@ declare global {
               max="100" 
               :disabled="compressStatus === 'compressing'"
             />
+          </div>
+          
+          <div class="date-control">
+            <div class="date-option-title">文件创建日期:</div>
+            <div class="date-options">
+              <div class="date-option">
+                <input 
+                  type="radio" 
+                  id="preserve-date" 
+                  value="preserve" 
+                  v-model="dateOption"
+                  :disabled="compressStatus === 'compressing'"
+                />
+                <label for="preserve-date">保留原始日期</label>
+              </div>
+              
+              <div class="date-option">
+                <input 
+                  type="radio" 
+                  id="current-date" 
+                  value="current" 
+                  v-model="dateOption"
+                  :disabled="compressStatus === 'compressing'"
+                />
+                <label for="current-date">使用当前日期</label>
+              </div>
+              
+              <div class="date-option">
+                <input 
+                  type="radio" 
+                  id="custom-date" 
+                  value="custom" 
+                  v-model="dateOption"
+                  :disabled="compressStatus === 'compressing'"
+                />
+                <label for="custom-date">自定义日期:</label>
+                <div class="date-time-inputs">
+                  <input 
+                    type="date" 
+                    v-model="customDate" 
+                    :disabled="dateOption !== 'custom' || compressStatus === 'compressing'"
+                  />
+                  <input 
+                    type="time" 
+                    v-model="customTime" 
+                    step="1"
+                    :disabled="dateOption !== 'custom' || compressStatus === 'compressing'"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           
           <button 
@@ -547,6 +617,56 @@ declare global {
 .quality-control input {
   width: 100%;
   margin-top: 5px;
+}
+
+.date-control {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.date-option-title {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.date-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-option input[type="radio"] {
+  margin: 0;
+}
+
+.date-time-inputs {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.date-option input[type="date"],
+.date-option input[type="time"] {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.date-option input[type="date"]:disabled,
+.date-option input[type="time"]:disabled {
+  background-color: #f0f0f0;
+  color: #999;
 }
 
 .compress-btn {

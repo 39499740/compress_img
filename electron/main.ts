@@ -3,6 +3,7 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
+import { promises as fsPromises } from 'node:fs'
 
 const require = createRequire(import.meta.url)
 // 使用sharp库进行图片处理
@@ -165,7 +166,7 @@ app.whenReady().then(() => {
   })
   
   // 压缩图片
-  ipcMain.handle('compress-images', async (_, { images, quality, outputDir }) => {
+  ipcMain.handle('compress-images', async (_, { images, quality, outputDir, dateOption, customDate }) => {
     try {
       const results: CompressResult[] = []
       
@@ -192,8 +193,10 @@ app.whenReady().then(() => {
             fs.mkdirSync(outputDirPath, { recursive: true })
           }
           
-          // 获取原始文件大小
-          const originalSize = fs.statSync(imagePath).size
+          // 获取原始文件大小和创建时间
+          const originalStat = fs.statSync(imagePath)
+          const originalSize = originalStat.size
+          const originalBirthTime = originalStat.birthtime
           
           // 根据文件扩展名选择合适的压缩方法
           const ext = path.extname(imagePath).toLowerCase()
@@ -217,6 +220,32 @@ app.whenReady().then(() => {
               .jpeg({ quality: qualityInt })
               .toFile(outputPath);
           }
+          
+          // 设置文件的创建日期
+          if (dateOption === 'preserve') {
+            // 保留原始创建日期
+            try {
+              const targetTime = originalBirthTime.getTime() / 1000;
+              await fsPromises.utimes(outputPath, targetTime, targetTime);
+            } catch (dateErr) {
+              console.error('设置文件日期失败:', dateErr);
+            }
+          } else if (dateOption === 'custom' && customDate) {
+            // 设置自定义日期
+            try {
+              // 确保日期字符串被正确解析
+              const customDateTime = new Date(customDate);
+              if (!isNaN(customDateTime.getTime())) {
+                const timeValue = customDateTime.getTime() / 1000;
+                await fsPromises.utimes(outputPath, timeValue, timeValue);
+              } else {
+                console.error('无效的日期格式:', customDate);
+              }
+            } catch (dateErr) {
+              console.error('设置文件日期失败:', dateErr);
+            }
+          }
+          // 如果是 'current'，不需要做任何事情，因为文件默认就是当前日期
           
           // 获取压缩后的文件大小
           const compressedSize = fs.statSync(outputPath).size

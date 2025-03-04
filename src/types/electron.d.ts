@@ -29,7 +29,13 @@ interface Window {
   imageCompressor: {
     selectFolder: () => Promise<{ canceled: boolean; folderPath?: string }>;
     scanImages: (folderPath: string) => Promise<{ success: boolean; images?: ImageFile[]; error?: string }>;
-    compressImages: (params: { images: ImageFile[]; quality: number; outputDir: string }) => Promise<{ success: boolean; results?: CompressResult[]; error?: string }>;
+    compressImages: (params: { 
+      images: ImageFile[]; 
+      quality: number; 
+      outputDir: string;
+      dateOption?: 'preserve' | 'current' | 'custom';
+      customDate?: string | null;
+    }) => Promise<{ success: boolean; results?: CompressResult[]; error?: string }>;
     selectOutputDir: () => Promise<{ canceled: boolean; outputDir?: string }>;
     saveFailedList: (failedContent: string, outputDir: string) => Promise<{ success: boolean; path?: string; error?: string }>;
     onProgress: (callback: (progress: number) => void) => void;
